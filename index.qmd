@@ -19,7 +19,7 @@ library(scales)
 
 ## Introduction
 
-This report presents an exploratory data analysis (EDA) of Chicago taxi data. Leveraging the Tidyverse ecosystem and Tidymodels in R, the analysis focuses on visualizing and quantifying key factors that influence tipping, such as trip distance and company performance.
+This report presents an exploratory data analysis (EDA) of Chicago `taxi` data. Leveraging the *Tidyverse* ecosystem and *Tidymodels* in R, the analysis focuses on **visualizing** and **quantifying** key factors that influence tipping, such as trip distance and company performance.
 
 <img src="images/taxi.png" align="right" width="300" height="180"/>
 
@@ -32,7 +32,7 @@ Key variables include trip distance, the specific taxi company, and temporal dat
 ### Data Dictionary
 
 | Variable | Description |
-|:-------------|:---------------------------------------------------------|
+|:----------------|:------------------------------------------------------|
 | `tip` | Whether the rider left a tip. A factor with levels "yes" and "no". |
 | `distance` | The trip distance, in odometer miles. |
 | `company` | The taxi company. Companies with low frequency were binned as "other". |
