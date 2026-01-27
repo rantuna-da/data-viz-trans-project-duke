@@ -6,9 +6,10 @@ echo: false
 bibliography: references.bib
 ---
 
-## Packages 
+## Packages
 
 ```{r}
+#| label: load-packages
 #| warning: false
 #| message: false
 library(tidyverse)
@@ -16,12 +17,37 @@ library(tidymodels)
 library(scales)
 ```
 
+## Introduction
+
+This report presents an exploratory data analysis (EDA) of Chicago taxi data. Leveraging the Tidyverse ecosystem and Tidymodels in R, the analysis focuses on visualizing and quantifying key factors that influence tipping, such as trip distance and company performance.
+
+<img src="images/taxi.png" align="right" width="300" height="180"/>
+
+## Description
+
+The data used in this report comprises a subset of taxi trips recorded in the city of Chicago during 2022. The dataset includes information on trip duration, location, and payment details, allowing for an analysis of factors influencing tipping behavior.
+
+Key variables include trip distance, the specific taxi company, and temporal data (hour, day, month).
+
+### Data Dictionary
+
+| Variable | Description |
+|:-------------|:---------------------------------------------------------|
+| `tip` | Whether the rider left a tip. A factor with levels "yes" and "no". |
+| `distance` | The trip distance, in odometer miles. |
+| `company` | The taxi company. Companies with low frequency were binned as "other". |
+| `Time` | Time of the requested trip. |
+| `local` | Whether the trip's starting and ending locations are in the same community. |
+| `dow` | The day of the week in which the trip began (Factor). |
+| `month` | The month in which the trip began (Factor). |
+| `hour` | The hour of the day in which the trip began (Numeric). |
+
 ## Question 1
 
+Is there there a relationship between the distance (in miles) someone travels in a taxi and if they tip or not?
 
-## Question 2 
+## Question 2
 
+Do taxi passengers tend to tip more for the company Chicago Independents than the other companies?
 
-## Your own question 
-
-
+## Your own question
