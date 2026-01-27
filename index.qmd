@@ -2,9 +2,18 @@
 title: "Project"
 author: "Roberto_Antuna"
 subtitle: "Investigation into Chicago taxis"
-echo: false
+format:
+  html:
+    code-fold: true
+    echo: true
 bibliography: references.bib
 ---
+
+## Introduction
+
+This report presents an exploratory data analysis (EDA) of Chicago `taxi` data. Leveraging the *Tidyverse* ecosystem and *Tidymodels* in R, the analysis focuses on **visualizing** and **quantifying** key factors that influence tipping, such as trip distance and company performance.
+
+<img src="images/taxi.png" align="right" width="300" height="180"/>
 
 ## Packages
 
@@ -15,13 +24,20 @@ bibliography: references.bib
 library(tidyverse)
 library(tidymodels)
 library(scales)
+library(skimr)
 ```
 
-## Introduction
+### Data
 
-This report presents an exploratory data analysis (EDA) of Chicago `taxi` data. Leveraging the *Tidyverse* ecosystem and *Tidymodels* in R, the analysis focuses on **visualizing** and **quantifying** key factors that influence tipping, such as trip distance and company performance.
+The dataset we will visualize is called `taxi`. Let's `glimpse()` at it.
 
-<img src="images/taxi.png" align="right" width="300" height="180"/>
+```{r}
+#| label: load-data
+#Load data
+data(taxi)
+glimpse(taxi)
+
+```
 
 ## Description
 
@@ -32,19 +48,139 @@ Key variables include trip distance, the specific taxi company, and temporal dat
 ### Data Dictionary
 
 | Variable | Description |
-|:----------------|:------------------------------------------------------|
+|:-------------------|:---------------------------------------------------|
 | `tip` | Whether the rider left a tip. A factor with levels "yes" and "no". |
 | `distance` | The trip distance, in odometer miles. |
-| `company` | The taxi company. Companies with low frequency were binned as "other". |
-| `Time` | Time of the requested trip. |
+| `company` | The taxi company, as a factor. Companies with low frequency were binned as "other". |
 | `local` | Whether the trip's starting and ending locations are in the same community. |
 | `dow` | The day of the week in which the trip began (Factor). |
 | `month` | The month in which the trip began (Factor). |
 | `hour` | The hour of the day in which the trip began (Numeric). |
 
+## General Data Overview
+
+Before diving into specific questions, let's examine the structure and integrity of the dataset.
+
+```{r}
+#| label: data-skim
+#| echo: true
+
+# Complete summary of statistics and null values
+skim_without_charts(taxi)
+
+```
+
+The summary statistics above reveal a clean and well-structured dataset with **zero missing values** across all variables, ensuring that no imputation is required for this analysis.
+
+Key observations include:
+
+-   **Tipping Behavior:** The target variable `tip` is highly unbalanced, with the vast majority of passengers (9,209 out of 10,000) opting to leave a tip.
+-   **Trip Distance:** The distance variable shows a strong right skew. While the average trip is approximately 6.22 miles, the median is much lower at 1.78 miles, indicating that most taxi rides are short. The high sd (7.38), which exceeds the mean, further confirms the presence of extreme outliers pulling the average up.
+-   **Companies:** The `company` variable has a significant number of observations categorized as "other" (2,715), suggesting a fragmented market with many smaller operators alongside major ones like Sun Taxi and Taxi Affiliation Services.
+
+```{r}
+#|label: tip-col_chart
+#| echo: true
+# Bar chart to see the proportion of tips
+taxi %>%
+  count(tip) %>%
+  mutate(
+    percentage = n / sum(n),
+    label = scales::percent(percentage, accuracy = 0.1)
+  ) %>%
+  ggplot(aes(x = tip, y = n, fill = tip)) +
+  geom_col(width = 0.6) +
+  geom_text(aes(label = label), vjust = -0.5, fontface = "bold") +
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_discrete(labels = str_to_title) +
+  scale_fill_manual(values = c("gray70", "steelblue")) +
+  labs(
+    title = "Distribution of Tipping Behavior",
+    subtitle = "Tipping is the overwhelming norm (92.1%)",
+    x = "Did the passenger tip?",
+    y = "Count of Trips",
+    caption = "Data: City of Chicago 2022 (via modeldata R package)"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r}
+#| label: distance-distribution
+#| echo: true
+#| warning: false
+# Histogram with logarithmic scale to handle bias
+ggplot(taxi, aes(x = distance)) +
+  geom_histogram(bins = 30, fill = "midnightblue", color = "white", alpha = 0.8) +
+  scale_x_log10(labels = scales::label_number(suffix = " mi")) +
+  labs(
+    title = "Distribution of Trip Distances",
+    subtitle = "Most trips are short (under 2 miles), with a long tail of outliers",
+    x = "Distance (Log Scale)",
+    y = "Frequency",
+    caption = "Data: City of Chicago 2022 (via modeldata R package)"
+  ) +
+  theme_minimal()
+```
+
 ## Question 1
 
 Is there there a relationship between the distance (in miles) someone travels in a taxi and if they tip or not?
+
+```{r}
+#| label: question-1-analysis
+#| echo: true
+
+# 1. Boxplot
+ggplot(taxi, aes(x = tip, y = distance, fill = tip)) +
+  geom_boxplot(alpha = 0.8, outlier.size = 1) +
+  scale_y_continuous(
+    labels = scales::label_number(suffix = " mi"),
+    breaks = seq(0, 50, 5)
+  ) +
+  scale_x_discrete(labels = str_to_title) +
+  scale_fill_manual(values = c("gray70", "steelblue")) +
+  labs(
+    title = "Relationship between Trip Distance and Tipping",
+    subtitle = "Trips with tips tend to be slightly longer on average",
+    x = "Did the passenger tip?",
+    y = "Trip Distance",
+    caption = "Data: City of Chicago 2022 (via modeldata R package)"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    panel.grid.major.x = element_blank()
+  )
+
+# 2. Data Evidence
+taxi %>%
+  group_by(tip) %>%
+  summarise(
+    count = n(),
+    avg_dist = mean(distance, na.rm = TRUE),
+    p25_dist = quantile(distance, 0.25, na.rm = TRUE),
+    median_dist = median(distance, na.rm = TRUE),
+    p75_dist = quantile(distance, 0.75, na.rm = TRUE)
+  ) |> 
+  knitr::kable(
+    col.names = c("Tip?", "Total Trips", "Mean Dist", "25th %", "Median", "75th %"),
+    digits = 2,
+    align = "c",
+    caption = "Distance Statistics by Tipping Status"
+  )
+```
+
+**Analysis:**
+
+The data reveals a clear behavioral split based on trip length:
+
+1.  **Short Trips (Under 2 miles):** Tipping behavior is unpredictable. The median distance for both groups is nearly identical (~1.7 miles), meaning distance is not a strong deciding factor for short hops.
+2.  **Long Trips (> 6 miles):** The probability of receiving a tip increases significantly with distance.
+    * The summary table shows that **75% of non-tipped trips are shorter than 6.26 miles**.
+    * In contrast, tipped trips frequently extend much further (75th percentile is **16.4 miles**).
+    
+**Conclusion:** While short trips are a toss-up, long-distance passengers are consistently more reliable tippers. Drivers accepting long fares face a much lower risk of not being tipped.
 
 ## Question 2
 
