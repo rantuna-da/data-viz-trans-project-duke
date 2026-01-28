@@ -13,7 +13,7 @@ bibliography: references.bib
 
 This report presents an exploratory data analysis (EDA) of Chicago `taxi` data. Leveraging the *Tidyverse* ecosystem and *Tidymodels* in R, the analysis focuses on **visualizing** and **quantifying** key factors that influence tipping, such as trip distance and company performance.
 
-<img src="images/taxi.png" align="right" width="300" height="180"/>
+![Chicago Taxi](images/taxi.png){fig-alt="Yellow taxi in Chicago" fig-align="right" width=300}
 
 ## Packages
 
@@ -24,6 +24,7 @@ This report presents an exploratory data analysis (EDA) of Chicago `taxi` data. 
 library(tidyverse)
 library(tidymodels)
 library(scales)
+library(modeldata)
 library(skimr)
 ```
 
@@ -48,12 +49,12 @@ Key variables include trip distance, the specific taxi company, and temporal dat
 ### Data Dictionary
 
 | Variable | Description |
-|:-----------------------|:-----------------------------------------------|
+|:-------------------------|:---------------------------------------------|
 | `tip` | Whether the rider left a tip. A factor with levels "yes" and "no". |
 | `distance` | The trip distance, in odometer miles. |
 | `company` | The taxi company, as a factor. Companies with low frequency were binned as "other". |
 | `local` | Whether the trip's starting and ending locations are in the same community. |
-| `dow` | The day of the week in which the trip began (Factor). |
+| `dow` | The day of the week the trip began (Factor). |
 | `month` | The month in which the trip began (Factor). |
 | `hour` | The hour of the day in which the trip began (Numeric). |
 
@@ -63,8 +64,6 @@ Before diving into specific questions, let's examine the structure and integrity
 
 ```{r}
 #| label: data-skim
-#| echo: true
-
 # Complete summary of statistics and null values
 skim_without_charts(taxi)
 
@@ -80,7 +79,6 @@ Key observations include:
 
 ```{r}
 #|label: tip-col_chart
-#| echo: true
 # Bar chart to see the proportion of tips
 taxi|>
   count(tip) |>
@@ -107,7 +105,6 @@ taxi|>
 
 ```{r}
 #| label: distance-distribution
-#| echo: true
 #| warning: false
 # Histogram with logarithmic scale to handle bias
 ggplot(taxi, aes(x = distance)) +
@@ -125,12 +122,10 @@ ggplot(taxi, aes(x = distance)) +
 
 ## Question 1
 
-Is there there a relationship between the distance (in miles) someone travels in a taxi and if they tip or not?
+Is there a relationship between the distance (in miles) someone travels in a taxi and if they tip or not?
 
 ```{r}
 #| label: question-1-analysis
-#| echo: true
-
 # 1. Boxplot
 ggplot(taxi, aes(x = tip, y = distance, fill = tip)) +
   geom_boxplot(alpha = 0.8, outlier.size = 1) +
@@ -180,17 +175,14 @@ The data reveals a clear behavioral split based on trip length:
     -   The summary table shows that **75% of non-tipped trips are shorter than 6.26 miles**.
     -   In contrast, tipped trips frequently extend much further (75th percentile is **16.4 miles**).
 
-**Conclusion:** 
-While short trips are a toss-up, long-distance passengers are consistently more reliable tippers. Drivers accepting long fares face a much lower risk of not being tipped.
+**Conclusion:** While short trips are a toss-up, long-distance passengers are consistently more reliable tippers. Drivers accepting long fares face a much lower risk of not being tipped.
 
 ## Question 2
 
-Do taxi passengers tend to tip more for the company Chicago Independents than the other companies?
+Do taxi passengers tend to tip more for the company Chicago Independents more than the other companies?
 
 ```{r}
 #| label: question-2-analysis
-#| echo: true
-
 # 1. Data prep
 company_analysis <- taxi |> 
   group_by(company) |> 
@@ -244,8 +236,7 @@ However, a granular analysis reveals a more nuanced competitive landscape:
 -   **Close Competitors:** Companies like "Sun Taxi" (93.9%) and "City Service" (92.7%) trail by a very narrow margin, suggesting high service standards across most major providers.
 -   **The Real Driver:** The significant gap in the "all other companies" group is largely driven by **Flash Cab**, which under-performs significantly with an **86.9%** tip rate. Without Flash Cab, the difference between Independents and the rest would be negligible.
 
-**Conclusion:**
-There is some to little evidence that the specific company brand drives tipping behavior. While "Chicago Independents" statistically leads the pack, the difference is marginal (~3%) and largely explained by the underperformance of a single competitor (Flash Cab) rather than a unique advantage of the leader.
+**Conclusion:** There is some to little evidence that the specific company brand drives tipping behavior. While "Chicago Independents" statistically leads the pack, the difference is marginal (\~3%) and largely explained by the underperformance of a single competitor (Flash Cab) rather than a unique advantage of the leader.
 
 ## Question 3
 
@@ -253,8 +244,6 @@ Does the time of day affect the likelihood of a passenger leaving a tip?
 
 ```{r}
 #| label: question-3-analysis
-#| echo: true
-
 # 1. Data Prep
 hourly_analysis <- taxi |> 
   group_by(hour) |> 
@@ -262,6 +251,7 @@ hourly_analysis <- taxi |>
     total_trips = n(),
     tip_rate = sum(tip == "yes") / n()
   )
+
 global_rate <- mean(taxi$tip == "yes")
 
 # 2. Visualization
@@ -307,8 +297,180 @@ The temporal analysis reveals unexpected insights regarding early morning trips:
 
 -   **Stability during Business Hours:** From 08:00 to 18:00, the tipping rate stabilizes near the global average (\~92%), representing the most reliable period for drivers due to high passenger volume(\>600 trips/hour).
 
-**Conclusion:**
-Time of day is **not a strong predictor** of whether a passenger will tip or not. Aside from statistical anomalies in the early morning due to small sample sizes, tipping behavior remains remarkably consistent (between 90% and 93%) throughout the entire day.
+**Conclusion:** Time of day is **not a strong predictor** of whether a passenger will tip or not. Aside from statistical anomalies in the early morning due to small sample sizes, tipping behavior remains remarkably consistent (between 90% and 93%) throughout the entire day.
 
 ## Bonus Chapter
 
+Now that we understand the key factors individually, let's combine them into a **Logistic Regression Model**. This allows us to quantify the probability of receiving a tip while controlling for multiple variables simultaneously (including time of year and day of week).
+
+### 1. Model Training
+
+We split the data into training (75%) and testing (25%) sets to ensure our model performs well on unseen data. We also normalize numerical predictors to compare them on the same scale.
+
+```{r}
+#| label: model-training
+set.seed(123)
+levels(taxi$tip) #checking the target's 2nd level 
+
+# 1. Split: training/testing
+taxi_split <- taxi |> 
+  mutate(tip = fct_relevel(tip, "no", "yes")) |> 
+  initial_split(prop = 0.75, strata = tip)
+train_data <- training(taxi_split)
+test_data  <- testing(taxi_split)
+
+# 2. Recipe: process
+# Including control variables (dow, month)
+taxi_rec <- recipe(tip ~ distance + company + local + hour + dow + month, data = train_data) |> 
+  step_dummy(all_nominal_predictors()) |> 
+  step_normalize(all_numeric_predictors()) |> 
+  step_zv(all_predictors())
+
+# 3. Model Spec: glm
+taxi_spec <- logistic_reg() |> 
+  set_engine("glm") |> 
+  set_mode("classification")
+
+# 4. Workflow: rec + model
+taxi_wf <- workflow() |> 
+  add_recipe(taxi_rec) |> 
+  add_model(taxi_spec)
+
+# 5. Fit: training the model
+taxi_fit <- taxi_wf |> 
+  fit(data = train_data)
+
+# model summary
+taxi_fit |> 
+  extract_fit_parsnip() |>  
+  tidy() |> 
+  mutate(
+    odds_ratio = exp(estimate),
+    p.value = scales::pvalue(p.value)
+  ) |> 
+  select(Term = term, Log_Odds = estimate, Odds_Ratio = odds_ratio, P_Value = p.value) |> 
+  knitr::kable(
+    digits = 3,
+    align = "lccr",
+    caption = "Model Coefficients: Log-Odds and Odds Ratios"
+  )
+```
+
+### 2. Model Evaluation
+
+How well does the model distinguish between tippers and non-tippers? We use the Area Under the ROC Curve (AUC) and a confusion matrix analysis.
+
+```{r}
+#| label: model-evaluation
+# 1. Generate predictions in Test Set
+predictions <- taxi_fit |> 
+  augment(test_data)
+
+# 2. Performance Metrics
+multi_metric <- metric_set(accuracy, sensitivity, specificity, roc_auc)
+
+metrics_table <- multi_metric(predictions, truth = tip, estimate = .pred_class, .pred_yes, event_level = "second")
+
+metrics_table |> 
+  knitr::kable(
+    col.names = c("Metric", "Estimator", "Value"),
+    digits = 3,
+    caption = "Model Performance Metrics"
+  )
+
+# 3. Visualization: ROC
+predictions |> 
+  roc_curve(truth = tip, .pred_yes, event_level = "second") |> 
+  autoplot() +
+  labs(
+    title = "ROC Curve",
+    subtitle = "Evaluating the trade-off between True Positives and False Positives"
+  ) +
+  theme_minimal()
+
+# 4. Confusion Matrix (Raw Numbers)
+conf_matrix <- predictions |> 
+  conf_mat(truth = tip, estimate = .pred_class)
+conf_matrix
+
+# 5. Heatmap
+conf_matrix |> 
+  autoplot(type = "heatmap") +
+  labs(
+    title = "Confusion Matrix",
+    subtitle = "Truth vs. Prediction (Darker is better frequency)"
+  )
+```
+
+**Analysis of Model Limitations:**
+
+As seen in the Confusion Matrix, the model successfully identifies the majority class ("Yes") but fails to capture the minority class ("No"). This happens because **92% of the data** consists of tippers.
+
+Since the Logistic Regression uses a standard probability threshold of **0.5**, and the probability of tipping is almost always high, the model decides it is "safer" to predict "Yes" for everyone. To fix this in a future iteration, we would need to:
+
+1.  Apply **Downsampling** techniques to balance the training data.
+2.  Adjust the **Threshold** (e.g., predict "No" if probability < 0.80).
+
+### 3. Feature Importance & Uncertainty (Forest Plot)
+
+What actually drives tipping? This chart visualizes the Odds Ratios with 95% Confidence Intervals.
+
+-   To the Right (\>1): Factor increases the chance of a tip.
+-   To the Left (\<1): Factor decreases the chance of a tip.
+-   Color: Distinguishes statistically significant factors from noise.
+
+```{r}
+#| label: model-interpretation
+# Extract coefficients with Confidence Intervals
+tidy(taxi_fit, conf.int = TRUE, conf.level = 0.95) |> 
+  filter(term != "(Intercept)") |> 
+  mutate(
+    # Transform Log-Odds to Odds Ratios (Multipliers)
+    estimate = exp(estimate),
+    conf.low = exp(conf.low),
+    conf.high = exp(conf.high),
+    # Determine Significance: If the interval crosses 1, it's not significant
+    is_significant = if_else(conf.low > 1 | conf.high < 1, "Significant", "Not Significant"),
+    term = str_remove_all(term, "company_|dow_|month_"),
+    term = fct_reorder(term, estimate)
+  ) |> 
+  ggplot(aes(x = estimate, y = term, color = is_significant)) +
+  # Reference Line (Neutral Effect = 1)
+  geom_vline(xintercept = 1, linetype = "dashed", color = "gray50") +
+  # Confidence Interval (Whiskers)
+  geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = 0.2) +
+  # Point Estimate (Dot)
+  geom_point(size = 3) +
+  scale_color_manual(values = c("Not Significant" = "gray70", "Significant" = "steelblue")) +
+  labs(
+    title = "Predictor Importance (Odds Ratios)",
+    subtitle = "Points > 1 increase tipping odds. Points < 1 decrease them.\nGray bars indicate statistical uncertainty (not significant).",
+    x = "Odds Ratio (with 95% CI)",
+    y = NULL,
+    color = "Statistical Significance"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+**Predictor Significance Analysis:**
+
+Based on the p-values (visualized above by the color coding), we can draw important conclusions about what *doesn't* matter:
+
+* **Seasonality is Weak:** Variables related to months (`month_Feb`, `Mar`, `Apr`) and specific times (`hour`) appear as gray bars, indicating they are **not statistically significant**. This suggests that tipping culture is relatively stable throughout the year and day.
+* **The "Monday/Friday" Effect:** While most days of the week are insignificant (gray), Mondays and Fridays show statistical significance.
+* **Company & Distance dominate:** The strongest signals consistently come from the trip distance and specific taxi providers, confirming that *who* takes you and *how far* you go matters more than *when* you go.
+
+### Model Conclusion
+
+While the model successfully identifies key drivers like **Distance**, **Local** and **Company** (as shown in the Odds Ratio chart), its overall predictive power is modest (AUC ~0.60).
+
+**Why?**
+The act of tipping is highly subjective and likely influenced by factors not present in this dataset, such as:
+
+* Driver behavior and courtesy.
+* Cleanliness of the vehicle.
+* Passenger's mood or financial situation.
+
+**Recommendation:**
+To build a highly accurate predictive tool, future data collection should include "Trip Ratings" or "Customer Feedback" columns. However, for current strategic planning, the **Logistic Regression** remains valuable for *inference*—confirming that longer trips and specific taxi providers are the best levers to increase tipping probability.
