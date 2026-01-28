@@ -13,7 +13,7 @@ bibliography: references.bib
 
 This report presents an exploratory data analysis (EDA) of Chicago `taxi` data. Leveraging the *Tidyverse* ecosystem and *Tidymodels* in R, the analysis focuses on **visualizing** and **quantifying** key factors that influence tipping, such as trip distance and company performance.
 
-![Chicago Taxi](images/taxi.png){fig-alt="Yellow taxi in Chicago" fig-align="right" width=300}
+![](images/taxi.png){fig-alt="Yellow taxi in Chicago" fig-align="center" width=300}
 
 ## Packages
 
