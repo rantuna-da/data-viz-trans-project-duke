@@ -109,12 +109,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>This report presents an exploratory data analysis (EDA) of Chicago <code>taxi</code> data. Leveraging the <em>Tidyverse</em> ecosystem and <em>Tidymodels</em> in R, the analysis focuses on <strong>visualizing</strong> and <strong>quantifying</strong> key factors that influence tipping, such as trip distance and company performance.</p>
+<p>This report presents an exploratory data analysis (EDA) of Chicago <code>taxi</code> data. Leveraging the <em>Tidyverse</em> ecosystem and <em>Tidymodels</em> in R, the analysis focuses on <strong>visualizing</strong> and <strong>quantifying</strong> key factors that influence tipping behavior.</p>
+<section id="business-objectives" class="level3">
+<h3 class="anchored" data-anchor-id="business-objectives">Business Objectives</h3>
+<p>The primary goal of this investigation is to provide actionable insights for the <strong>Chicago Taxi Drivers Association</strong>. Specifically, this report seeks to answer three strategic questions to help drivers maximize their earning potential:</p>
+<ol type="1">
+<li><strong>Distance:</strong> Is there a relationship between the distance someone travels in a taxi and if they tip or not?</li>
+<li><strong>Service Provider:</strong> Do taxi passengers tend to tip more for the company Chicago Independents more than the other companies?</li>
+<li><strong>Timing:</strong> Is there an optimal time of day (“Golden Hour”) when passengers are most generous?</li>
+</ol>
+<p>By addressing these questions, we aim to identify the key levers—such as trip selection and provider choice—that drive financial performance.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="images/taxi.png" class="img-fluid quarto-figure quarto-figure-center figure-img" alt="Yellow taxi in Chicago" width="300"></p>
 </figure>
 </div>
+</section>
 </section>
 <section id="packages" class="level2">
 <h2 class="anchored" data-anchor-id="packages">Packages</h2>
@@ -160,8 +170,8 @@ $ hour     &lt;int&gt; 16, 8, 18, 8, 21, 23, 12, 6, 12, 14, 18, 11, 12, 19, 17, 
 <h3 class="anchored" data-anchor-id="data-dictionary">Data Dictionary</h3>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 36%">
-<col style="width: 63%">
+<col style="width: 50%">
+<col style="width: 50%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -442,7 +452,7 @@ $ hour     &lt;int&gt; 16, 8, 18, 8, 21, 23, 12, 6, 12, 14, 18, 11, 12, 19, 17, 
 </section>
 <section id="question-1" class="level2">
 <h2 class="anchored" data-anchor-id="question-1">Question 1</h2>
-<p>Is there a relationship between the distance (in miles) someone travels in a taxi and if they tip or not?</p>
+<p>Is there a relationship between the distance someone travels in a taxi and if they tip or not?</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -667,7 +677,7 @@ $ hour     &lt;int&gt; 16, 8, 18, 8, 21, 23, 12, 6, 12, 14, 18, 11, 12, 19, 17, 
 </section>
 <section id="question-3" class="level2">
 <h2 class="anchored" data-anchor-id="question-3">Question 3</h2>
-<p>Does the time of day affect the likelihood of a passenger leaving a tip?</p>
+<p>Is there an optimal time of day (“Golden Hour”) when passengers are most generous?</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -1146,6 +1156,29 @@ Prediction   no  yes
 <li>Passenger’s mood or financial situation.</li>
 </ul>
 <p><strong>Recommendation:</strong> To build a highly accurate predictive tool, future data collection should include “Trip Ratings” or “Customer Feedback” columns. However, for current strategic planning, the <strong>Logistic Regression</strong> remains valuable for <em>inference</em>—confirming that longer trips and specific taxi providers are the best levers to increase tipping probability.</p>
+</section>
+</section>
+<section id="executive-summary" class="level2">
+<h2 class="anchored" data-anchor-id="executive-summary">Executive Summary</h2>
+<p>To conclude this investigation for the <strong>Chicago Taxi Drivers Association</strong>, we have synthesized findings from both exploratory analysis and statistical modeling.</p>
+<section id="key-findings" class="level3">
+<h3 class="anchored" data-anchor-id="key-findings">Key Findings</h3>
+<ol type="1">
+<li><strong>Distance is the Primary Driver:</strong>
+<ul>
+<li>Trips longer than <strong>6 miles</strong> are the safest bet for drivers, offering a significantly higher probability of being tipped compared to short, local trips.</li>
+<li>Short trips (&lt; 2 miles) are volatile and statistically unpredictable regarding tips.</li>
+</ul></li>
+<li><strong>Company Brand Matters (But beware of the outlier):</strong>
+<ul>
+<li><strong>Chicago Independents</strong> sets the gold standard with a ~95% tipping rate.</li>
+<li>Drivers should be aware that the gap in market performance is largely driven by the underperformance of <strong>Flash Cab</strong> (86.9%). Excluding this outlier, service standards across the city are consistently high.</li>
+</ul></li>
+<li><strong>The Myth of the “Golden Hour”:</strong>
+<ul>
+<li>Contrary to common belief, <strong>time of day is not a decisive factor</strong>. Tipping behavior is remarkably stable (~92%) throughout business hours. Drivers do not need to chase specific time slots to maximize tip probability.</li>
+</ul></li>
+</ol>
 </section>
 </section>
 

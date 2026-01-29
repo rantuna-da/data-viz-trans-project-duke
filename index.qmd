@@ -11,9 +11,19 @@ bibliography: references.bib
 
 ## Introduction
 
-This report presents an exploratory data analysis (EDA) of Chicago `taxi` data. Leveraging the *Tidyverse* ecosystem and *Tidymodels* in R, the analysis focuses on **visualizing** and **quantifying** key factors that influence tipping, such as trip distance and company performance.
+This report presents an exploratory data analysis (EDA) of Chicago `taxi` data. Leveraging the *Tidyverse* ecosystem and *Tidymodels* in R, the analysis focuses on **visualizing** and **quantifying** key factors that influence tipping behavior.
 
-![](images/taxi.png){fig-alt="Yellow taxi in Chicago" fig-align="center" width=300}
+### Business Objectives
+
+The primary goal of this investigation is to provide actionable insights for the **Chicago Taxi Drivers Association**. Specifically, this report seeks to answer three strategic questions to help drivers maximize their earning potential:
+
+1.  **Distance:** Is there a relationship between the distance someone travels in a taxi and if they tip or not?
+2.  **Service Provider:** Do taxi passengers tend to tip more for the company Chicago Independents more than the other companies?
+3.  **Timing:** Is there an optimal time of day ("Golden Hour") when passengers are most generous?
+
+By addressing these questions, we aim to identify the key levers—such as trip selection and provider choice—that drive financial performance.
+
+![](images/taxi.png){fig-alt="Yellow taxi in Chicago" fig-align="center" width="300"}
 
 ## Packages
 
@@ -49,7 +59,7 @@ Key variables include trip distance, the specific taxi company, and temporal dat
 ### Data Dictionary
 
 | Variable | Description |
-|:-------------------------|:---------------------------------------------|
+|:-----------------------------------|:-----------------------------------|
 | `tip` | Whether the rider left a tip. A factor with levels "yes" and "no". |
 | `distance` | The trip distance, in odometer miles. |
 | `company` | The taxi company, as a factor. Companies with low frequency were binned as "other". |
@@ -122,7 +132,7 @@ ggplot(taxi, aes(x = distance)) +
 
 ## Question 1
 
-Is there a relationship between the distance (in miles) someone travels in a taxi and if they tip or not?
+Is there a relationship between the distance someone travels in a taxi and if they tip or not?
 
 ```{r}
 #| label: question-1-analysis
@@ -240,7 +250,7 @@ However, a granular analysis reveals a more nuanced competitive landscape:
 
 ## Question 3
 
-Does the time of day affect the likelihood of a passenger leaving a tip?
+Is there an optimal time of day (“Golden Hour”) when passengers are most generous?
 
 ```{r}
 #| label: question-3-analysis
@@ -409,7 +419,7 @@ As seen in the Confusion Matrix, the model successfully identifies the majority 
 Since the Logistic Regression uses a standard probability threshold of **0.5**, and the probability of tipping is almost always high, the model decides it is "safer" to predict "Yes" for everyone. To fix this in a future iteration, we would need to:
 
 1.  Apply **Downsampling** techniques to balance the training data.
-2.  Adjust the **Threshold** (e.g., predict "No" if probability < 0.80).
+2.  Adjust the **Threshold** (e.g., predict "No" if probability \< 0.80).
 
 ### 3. Feature Importance & Uncertainty (Forest Plot)
 
@@ -457,20 +467,35 @@ tidy(taxi_fit, conf.int = TRUE, conf.level = 0.95) |>
 
 Based on the p-values (visualized above by the color coding), we can draw important conclusions about what *doesn't* matter:
 
-* **Seasonality is Weak:** Variables related to months (`month_Feb`, `Mar`, `Apr`) and specific times (`hour`) appear as gray bars, indicating they are **not statistically significant**. This suggests that tipping culture is relatively stable throughout the year and day.
-* **The "Monday/Friday" Effect:** While most days of the week are insignificant (gray), Mondays and Fridays show statistical significance.
-* **Company & Distance dominate:** The strongest signals consistently come from the trip distance and specific taxi providers, confirming that *who* takes you and *how far* you go matters more than *when* you go.
+-   **Seasonality is Weak:** Variables related to months (`month_Feb`, `Mar`, `Apr`) and specific times (`hour`) appear as gray bars, indicating they are **not statistically significant**. This suggests that tipping culture is relatively stable throughout the year and day.
+-   **The "Monday/Friday" Effect:** While most days of the week are insignificant (gray), Mondays and Fridays show statistical significance.
+-   **Company & Distance dominate:** The strongest signals consistently come from the trip distance and specific taxi providers, confirming that *who* takes you and *how far* you go matters more than *when* you go.
 
 ### Model Conclusion
 
-While the model successfully identifies key drivers like **Distance**, **Local** and **Company** (as shown in the Odds Ratio chart), its overall predictive power is modest (AUC ~0.60).
+While the model successfully identifies key drivers like **Distance**, **Local** and **Company** (as shown in the Odds Ratio chart), its overall predictive power is modest (AUC \~0.60).
 
-**Why?**
-The act of tipping is highly subjective and likely influenced by factors not present in this dataset, such as:
+**Why?** The act of tipping is highly subjective and likely influenced by factors not present in this dataset, such as:
 
-* Driver behavior and courtesy.
-* Cleanliness of the vehicle.
-* Passenger's mood or financial situation.
+-   Driver behavior and courtesy.
+-   Cleanliness of the vehicle.
+-   Passenger's mood or financial situation.
 
-**Recommendation:**
-To build a highly accurate predictive tool, future data collection should include "Trip Ratings" or "Customer Feedback" columns. However, for current strategic planning, the **Logistic Regression** remains valuable for *inference*—confirming that longer trips and specific taxi providers are the best levers to increase tipping probability.
+**Recommendation:** To build a highly accurate predictive tool, future data collection should include "Trip Ratings" or "Customer Feedback" columns. However, for current strategic planning, the **Logistic Regression** remains valuable for *inference*—confirming that longer trips and specific taxi providers are the best levers to increase tipping probability.
+
+## Executive Summary
+
+To conclude this investigation for the **Chicago Taxi Drivers Association**, we have synthesized findings from both exploratory analysis and statistical modeling.
+
+### Key Findings
+
+1.  **Distance is the Primary Driver:**
+    * Trips longer than **6 miles** are the safest bet for drivers, offering a significantly higher probability of being tipped compared to short, local trips.
+    * Short trips (< 2 miles) are volatile and statistically unpredictable regarding tips.
+
+2.  **Company Brand Matters (But beware of the outlier):**
+    * **Chicago Independents** sets the gold standard with a ~95% tipping rate.
+    * Drivers should be aware that the gap in market performance is largely driven by the underperformance of **Flash Cab** (86.9%). Excluding this outlier, service standards across the city are consistently high.
+
+3.  **The Myth of the "Golden Hour":**
+    * Contrary to common belief, **time of day is not a decisive factor**. Tipping behavior is remarkably stable (~92%) throughout business hours. Drivers do not need to chase specific time slots to maximize tip probability.
