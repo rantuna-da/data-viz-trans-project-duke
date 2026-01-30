@@ -27,6 +27,8 @@ The primary goal of this investigation is to provide actionable insights for the
 
 By addressing these questions, we aim to identify the key levers—such as trip selection and provider choice—that drive financial performance.
 
+**Bonus Chapter:** *Data Modeling*
+
 ![](images/taxi.png){fig-alt="Yellow taxi in Chicago" fig-align="center" width="300"}
 
 ## Packages
