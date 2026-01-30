@@ -109,7 +109,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>This report presents an exploratory data analysis (EDA) of Chicago <code>taxi</code> data. Leveraging the <em>Tidyverse</em> ecosystem and <em>Tidymodels</em> in R, the analysis focuses on <strong>visualizing</strong> and <strong>quantifying</strong> key factors that influence tipping behavior.</p>
+<p>This report presents an exploratory data analysis (EDA) of Chicago <code>taxi</code> data. Leveraging the <code>Tidyverse</code> ecosystem and <code>Tidymodels</code> in R, the analysis focuses on <strong>visualizing</strong> and <strong>quantifying</strong> key factors that influence tipping behavior.</p>
+<p>The data used in this report comprises a subset of taxi trips recorded in the city of Chicago during 2022. The dataset includes information on trip duration, location, and payment details, allowing for an analysis of factors influencing tipping behavior.</p>
+<p>Key variables include trip distance, the specific taxi company, and temporal data (hour, day, month).</p>
 <section id="business-objectives" class="level3">
 <h3 class="anchored" data-anchor-id="business-objectives">Business Objectives</h3>
 <p>The primary goal of this investigation is to provide actionable insights for the <strong>Chicago Taxi Drivers Association</strong>. Specifically, this report seeks to answer three strategic questions to help drivers maximize their earning potential:</p>
@@ -138,9 +140,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(skimr)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<section id="data" class="level3">
-<h3 class="anchored" data-anchor-id="data">Data</h3>
-<p>The dataset we will visualize is called <code>taxi</code>. Let’s <code>glimpse()</code> at it.</p>
+</section>
+<section id="data" class="level2">
+<h2 class="anchored" data-anchor-id="data">Data</h2>
+<p>The dataset we will visualize is called <code>taxi</code> from <em>modeldata</em> R package. The following steps load and provide an initial overview of the dataset.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -160,12 +163,6 @@ $ month    &lt;fct&gt; Feb, Mar, Feb, Apr, Mar, Apr, Mar, Jan, Apr, Mar, Mar, Ap
 $ hour     &lt;int&gt; 16, 8, 18, 8, 21, 23, 12, 6, 12, 14, 18, 11, 12, 19, 17, 13, …</code></pre>
 </div>
 </div>
-</section>
-</section>
-<section id="description" class="level2">
-<h2 class="anchored" data-anchor-id="description">Description</h2>
-<p>The data used in this report comprises a subset of taxi trips recorded in the city of Chicago during 2022. The dataset includes information on trip duration, location, and payment details, allowing for an analysis of factors influencing tipping behavior.</p>
-<p>Key variables include trip distance, the specific taxi company, and temporal data (hour, day, month).</p>
 <section id="data-dictionary" class="level3">
 <h3 class="anchored" data-anchor-id="data-dictionary">Data Dictionary</h3>
 <table class="caption-top table">

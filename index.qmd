@@ -11,7 +11,11 @@ bibliography: references.bib
 
 ## Introduction
 
-This report presents an exploratory data analysis (EDA) of Chicago `taxi` data. Leveraging the *Tidyverse* ecosystem and *Tidymodels* in R, the analysis focuses on **visualizing** and **quantifying** key factors that influence tipping behavior.
+This report presents an exploratory data analysis (EDA) of Chicago `taxi` data. Leveraging the `Tidyverse` ecosystem and `Tidymodels` in R, the analysis focuses on **visualizing** and **quantifying** key factors that influence tipping behavior.
+
+The data used in this report comprises a subset of taxi trips recorded in the city of Chicago during 2022. The dataset includes information on trip duration, location, and payment details, allowing for an analysis of factors influencing tipping behavior.
+
+Key variables include trip distance, the specific taxi company, and temporal data (hour, day, month).
 
 ### Business Objectives
 
@@ -38,9 +42,9 @@ library(modeldata)
 library(skimr)
 ```
 
-### Data
+## Data
 
-The dataset we will visualize is called `taxi`. Let's `glimpse()` at it.
+The dataset we will visualize is called `taxi` from *modeldata* R package. The following steps load and provide an initial overview of the dataset.
 
 ```{r}
 #| label: load-data
@@ -49,12 +53,6 @@ data(taxi)
 glimpse(taxi)
 
 ```
-
-## Description
-
-The data used in this report comprises a subset of taxi trips recorded in the city of Chicago during 2022. The dataset includes information on trip duration, location, and payment details, allowing for an analysis of factors influencing tipping behavior.
-
-Key variables include trip distance, the specific taxi company, and temporal data (hour, day, month).
 
 ### Data Dictionary
 
