@@ -88,7 +88,8 @@ Key observations include:
 -   **Companies:** The `company` variable has a significant number of observations categorized as "other" (2,715), suggesting a fragmented market with many smaller operators alongside major ones like Sun Taxi and Taxi Affiliation Services.
 
 ```{r}
-#|label: tip-col_chart
+#| label: tip-col_chart
+#| fig-cap: "Figure 1. Frequency of trips by tipping status, highlighting the significant class imbalance in the dataset."
 # Bar chart to see the proportion of tips
 taxi|>
   count(tip) |>
@@ -116,6 +117,7 @@ taxi|>
 ```{r}
 #| label: distance-distribution
 #| warning: false
+#| fig-cap: "Figure 2. Histogram of trip distances using a logarithmic x-axis to accommodate the right-skewed distribution."
 # Histogram with logarithmic scale to handle bias
 ggplot(taxi, aes(x = distance)) +
   geom_histogram(bins = 30, fill = "midnightblue", color = "white", alpha = 0.8) +
@@ -136,6 +138,7 @@ Is there a relationship between the distance someone travels in a taxi and if th
 
 ```{r}
 #| label: question-1-analysis
+#| fig-cap: "Figure 3. Comparative distribution of trip distances by tipping status, displaying the median, quartiles, and outliers."
 # 1. Boxplot
 ggplot(taxi, aes(x = tip, y = distance, fill = tip)) +
   geom_boxplot(alpha = 0.8, outlier.size = 1) +
@@ -172,7 +175,7 @@ taxi |>
     col.names = c("Tip?", "Total Trips", "Mean Dist", "25th %", "Median", "75th %"),
     digits = 2,
     align = "c",
-    caption = "Distance Statistics by Tipping Status"
+    caption = "Table 1. Distance Statistics by Tipping Status"
   )
 ```
 
@@ -193,6 +196,7 @@ Do taxi passengers tend to tip more for the company Chicago Independents more th
 
 ```{r}
 #| label: question-2-analysis
+#| fig-cap: "Figure 4. Tipping rates by company provider, ranked by performance and highlighting the market leader."
 # 1. Data prep
 company_analysis <- taxi |> 
   group_by(company) |> 
@@ -232,7 +236,7 @@ company_analysis |>
     col.names = c("Company", "Total Trips", "Tipped Trips", "Tip Rate"),
     digits = 3,
     align = "lccc",
-    caption = "Tip Rates by Company Provider"
+    caption = "Table 2. Tip Rates by Company Provider"
   )
 ```
 
@@ -254,6 +258,7 @@ Is there an optimal time of day (“Golden Hour”) when passengers are most gen
 
 ```{r}
 #| label: question-3-analysis
+#| fig-cap: "Figure 5. Temporal variation in tipping rates throughout the day, including the global average."
 # 1. Data Prep
 hourly_analysis <- taxi |> 
   group_by(hour) |> 
@@ -293,7 +298,7 @@ hourly_analysis |>
     col.names = c("Hour", "Total Trips", "Tip Rate"),
     digits = 3,
     align = "ccc",
-    caption = "Top Performing Hours (Note the low Total Trips)"
+    caption = "Table 3. Top Performing Hours (Note the low Total Trips)"
   )
 ```
 
@@ -362,7 +367,7 @@ taxi_fit |>
   knitr::kable(
     digits = 3,
     align = "lccr",
-    caption = "Model Coefficients: Log-Odds and Odds Ratios"
+    caption = "Table 4. Model Coefficients: Log-Odds and Odds Ratios"
   )
 ```
 
@@ -371,7 +376,7 @@ taxi_fit |>
 How well does the model distinguish between tippers and non-tippers? We use the Area Under the ROC Curve (AUC) and a confusion matrix analysis.
 
 ```{r}
-#| label: model-evaluation
+#| label: model-evaluation-1
 # 1. Generate predictions in Test Set
 predictions <- taxi_fit |> 
   augment(test_data)
@@ -385,9 +390,13 @@ metrics_table |>
   knitr::kable(
     col.names = c("Metric", "Estimator", "Value"),
     digits = 3,
-    caption = "Model Performance Metrics"
+    caption = "Table 5. Model Performance Metrics"
   )
+```
 
+```{r}
+#| label: model-evaluation-2
+#| fig-cap: "Figure 6. Visual assessment of the model's discriminatory power."
 # 3. Visualization: ROC
 predictions |> 
   roc_curve(truth = tip, .pred_yes, event_level = "second") |> 
@@ -397,7 +406,11 @@ predictions |>
     subtitle = "Evaluating the trade-off between True Positives and False Positives"
   ) +
   theme_minimal()
+```
 
+```{r}
+#| label: model-evaluation-3
+#| fig-cap: "Figure 7. Heatmap of the Confusion Matrix."
 # 4. Confusion Matrix (Raw Numbers)
 conf_matrix <- predictions |> 
   conf_mat(truth = tip, estimate = .pred_class)
@@ -431,6 +444,7 @@ What actually drives tipping? This chart visualizes the Odds Ratios with 95% Con
 
 ```{r}
 #| label: model-interpretation
+#| fig-cap: "Figure 8. Forest plot displaying Odds Ratios with 95% CI. Predictors are statistically significant only if their error bars do not cross the neutral vertical line (OR = 1)."
 # Extract coefficients with Confidence Intervals
 tidy(taxi_fit, conf.int = TRUE, conf.level = 0.95) |> 
   filter(term != "(Intercept)") |> 
