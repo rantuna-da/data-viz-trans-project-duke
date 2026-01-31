@@ -1,12 +1,15 @@
 ---
-title: "Project"
+title: "Analysis of Chicago taxis"
+subtitle: "Capstone Project: Duke University Data Science with R"
 author: "Roberto_Antuna"
-subtitle: "Analysis of Chicago taxis"
+date: "2026-01-19"
 format:
   html:
+    toc: true
+    toc-location: left
     code-fold: true
     echo: true
-bibliography: references.bib
+    theme: cosmo
 ---
 
 ## Introduction
