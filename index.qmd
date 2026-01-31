@@ -7,6 +7,7 @@ format:
   html:
     toc: true
     toc-location: left
+    toc-depth: 3
     code-fold: true
     echo: true
     theme: cosmo
@@ -326,7 +327,7 @@ Now that we understand the key factors individually, let's combine them into a *
 We split the data into training (75%) and testing (25%) sets to ensure our model performs well on unseen data. We also normalize numerical predictors to compare them on the same scale.
 
 ```{r}
-#| label: model-training
+#| label: model-training-code
 set.seed(123)
 levels(taxi$tip) #checking the target's 2nd level 
 
